@@ -11,6 +11,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const adminRouter = require('./routes/adminRoutes');
 const studentRouter = require('./routes/studentRoutes');
 const centerRouter = require('./routes/CenterRoutes');
+const authRouter = require('./routes/authRoutes');
 
 // Database connection import
 const connectDB = require('./config/db');
@@ -42,6 +43,7 @@ app.use(helmet());
 app.use('/admin', adminRouter);
 app.use('/student', studentRouter);
 app.use('/center', centerRouter);
+app.use('/auth', authRouter);
 
 // ───── 404 Handler ─────
 app.use((req, res) => {
