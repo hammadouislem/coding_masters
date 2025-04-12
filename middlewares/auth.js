@@ -1,4 +1,4 @@
-require('dotenv-safe').config(); // Ensure all required env vars are defined
+require('dotenv').config(); // Ensure all required env vars are defined
 
 const jwt = require("jsonwebtoken");
 const { User } = require("../models/User");
