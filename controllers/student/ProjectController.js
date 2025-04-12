@@ -1,22 +1,19 @@
 const Project = require('../../models/project');
 const GlobalDeadline = require('../../models/GlobalDeadline');
 
-// Controller to create a new project
 const createProject = async (req, res) => {
   try {
-    const { title, description, team, userId } = req.body; // Get userId from body
+    const { title, description, team, userId } = req.body;
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required.' });
     }
 
-    // Validate input data
     if (!title || !description || !team || team.length < 1 || team.length > 6) {
       return res.status(400).json({
         error: 'Invalid input data. Ensure title, description, and team size (1-6) are provided.',
       });
     }
 
-    // Validate each team member's fields
     const validTeam = team.every((member) => {
       return (
         member.first_name &&
@@ -35,18 +32,16 @@ const createProject = async (req, res) => {
       });
     }
 
-    // Check if user already submitted a project
     const existingProject = await Project.findOne({ createdBy: userId });
     if (existingProject) {
       return res.status(400).json({ error: 'You have already submitted a project.' });
     }
 
-    // Create a new project
     const project = new Project({
       title,
       description,
       team,
-      createdBy: userId,  // Use the userId from the body
+      createdBy: userId,
       status: 'saved',
     });
 
@@ -57,7 +52,6 @@ const createProject = async (req, res) => {
   }
 };
 
-// Controller to edit an existing project
 const editProject = async (req, res) => {
   try {
     const { projectId, title, description, team, userId } = req.body; // Get userId from body
@@ -67,8 +61,13 @@ const editProject = async (req, res) => {
 
     const project = await Project.findById(projectId);
 
-    if (!project || project.createdBy.toString() !== userId) {
-      return res.status(404).json({ error: 'Project not found or unauthorized.' });
+    // Check if project exists and if the current user is the creator of the project
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found.' });
+    }
+
+    if (project.createdBy.toString() !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to edit this project.' });
     }
 
     // Check if the global deadline has passed
@@ -89,7 +88,7 @@ const editProject = async (req, res) => {
   }
 };
 
-// Controller to submit a project
+
 const submitProject = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -103,15 +102,14 @@ const submitProject = async (req, res) => {
       return res.status(400).json({ error: 'Cannot modify the project after it has been submitted.' });
     }
 
-    // Check if the global deadline has passed
     const globalDeadline = await GlobalDeadline.findOne();
     if (globalDeadline && new Date() > new Date(globalDeadline.deadline)) {
-      project.status = 'sent'; // Automatically submit the project
+      project.status = 'sent';
       await project.save();
       return res.status(200).json({ message: 'Global deadline passed. Project has been submitted automatically.', project });
     }
 
-    project.status = 'sent'; // Mark project as submitted
+    project.status = 'sent';
     await project.save();
     res.status(200).json({ message: 'Project has been submitted successfully.', project });
   } catch (err) {

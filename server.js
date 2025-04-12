@@ -5,43 +5,70 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const path = require('path');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 const errorHandler = require('./middlewares/errorHandler');
 
-// Route imports
 const adminRouter = require('./routes/adminRoutes');
 const studentRouter = require('./routes/studentRoutes');
 const centerRouter = require('./routes/CenterRoutes');
 const authRouter = require('./routes/authRoutes');
 
-// Database connection import
 const connectDB = require('./config/db');
 
 const app = express();
 
-// ───── MIDDLEWARE SETUP ─────
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Mashrou3i API Documentation',
+      version: '1.0.0',
+      description: 'API documentation for managing projects, deadlines, and statuses in the admin panel for the Coding Masters 2025.',
+    },
+    servers: [
+      {
+        url: `http://localhost:${process.env.PORT || 5000}`,
+      },
+    ],
+  },
+  apis: [path.join(__dirname, './routes/*.js')],
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// ───── Middleware ─────
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const corsOptions = {
-    origin: 'http://localhost:3000', // Your frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // Allow cookies to be sent along with requests
-  };
-  
-  // Use the CORS middleware
-  app.use(cors(corsOptions));
-  
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests, please try again later.',
+
+// Helmet for security
+app.use(helmet({
+  crossOriginResourcePolicy: false,
 }));
 
-app.use(morgan('combined'));
-app.use(helmet());
+// CORS
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' ? 'https://your-production-frontend.com' : 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
-// ───── ROUTES ─────
+// Rate Limiting
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.',
+}));
+
+// Logging
+app.use(morgan('combined'));
+
+// ───── Routes ─────
 app.use('/admin', adminRouter);
 app.use('/student', studentRouter);
 app.use('/center', centerRouter);
@@ -52,24 +79,36 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// ───── Error Handler (last) ─────
+// ───── Error Handler ─────
 app.use(errorHandler);
 
-// ───── DB CONNECTION & SERVER BOOTSTRAP ─────
+// ───── Start Server ─────
 const startServer = () => {
   const PORT = process.env.PORT || 5000;
   const server = app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📄 Swagger Docs available at http://localhost:${PORT}/api-docs`);
   });
 
   process.on('SIGINT', () => {
-    console.log('🛑 Graceful shutdown');
+    console.log('🛑 Graceful shutdown - SIGINT received');
     server.close(() => {
-      console.log('✅ Closed remaining connections');
+      console.log('💤 Server closed');
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGTERM', () => {
+    console.log('🔌 Graceful shutdown - SIGTERM received');
+    server.close(() => {
+      console.log('💤 Server closed');
       process.exit(0);
     });
   });
 };
 
-// Start DB connection and server
-connectDB().then(startServer);
+// ───── Connect DB & Launch ─────
+connectDB().then(() => startServer()).catch((err) => {
+  console.error('❌ Failed to connect to database', err);
+  process.exit(1);
+});

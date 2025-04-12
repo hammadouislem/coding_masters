@@ -1,19 +1,21 @@
-const jwt = require('jsonwebtoken');
+require('dotenv').config();  // To load the .env file
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticateUser = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Assuming Bearer token
+  const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
-    return res.status(401).json({ error: 'User not authenticated.' });
+    return res.status(401).json({ error: 'No token provided.' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: 'Token is invalid or expired.' });
-    }
-    req.user = decoded;  // Attach the decoded user info to the request object
-    next();  // Proceed to the next middleware or route handler
-  });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid or expired token.' });
+  }
 };
 
 module.exports = { authenticateUser };

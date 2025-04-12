@@ -1,5 +1,5 @@
 const Project = require('../../models/project');
-const GlobalDeadline = require('../../models/globalDeadline'); // make sure this model exists
+const GlobalDeadline = require('../../models/GlobalDeadline'); // make sure this model exists
 
 
 exports.getAllProjects = async (req, res) => {

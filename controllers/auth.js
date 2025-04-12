@@ -2,6 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User'); // Adjust the path if needed
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is not defined in the environment variables.');
+}
+
 const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -20,7 +24,6 @@ const signin = async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials. Incorrect password.' });
     }
 
-    // Match the structure expected in roleCheck.js
     const token = jwt.sign(
       {
         user: {
