@@ -12,8 +12,35 @@ const validateProjectCreation = [
     .isLength({ max: 500 }).withMessage("Description must be at most 500 characters"),
 
   body("team")
-    .isArray().withMessage("Team must be an array")
-    .isLength({ min: 1, max: 6 }).withMessage("Team size must be between 1 and 6 members"),
+    .isArray({ min: 1, max: 6 }).withMessage("Team must have between 1 and 6 members"),
+
+  // Validate team member fields
+  body("team.*.firstName")
+    .notEmpty().withMessage("First name is required")
+    .isString().withMessage("First name must be a string"),
+
+  body("team.*.lastName")
+    .notEmpty().withMessage("Last name is required")
+    .isString().withMessage("Last name must be a string"),
+
+  body("team.*.email")
+    .isEmail().withMessage("Invalid email"),
+
+  body("team.*.phoneNumber")
+    .notEmpty().withMessage("Phone number is required")
+    .isString().withMessage("Phone number must be a string"),
+
+  body("team.*.speciality")
+    .notEmpty().withMessage("Speciality is required")
+    .isString().withMessage("Speciality must be a string"),
+
+  body("team.*.studentId")
+    .notEmpty().withMessage("Student ID is required")
+    .isString().withMessage("Student ID must be a string"),
+
+  body("team.*.yearOfInscription")
+    .notEmpty().withMessage("Year of inscription is required")
+    .isInt({ min: 2010, max: 2100 }).withMessage("Year must be a valid number"),
 
   body("deadline")
     .optional()
@@ -26,6 +53,7 @@ const validateProjectCreation = [
       return true;
     })
 ];
+
 
 const validateProjectUpdate = [
   body("title")
