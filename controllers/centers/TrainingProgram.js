@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const TrainingProgram = require('../../models/TrainingProgram');
-const Project = require('../../models/Project');
+const Project = require('../../models/Project');  // assuming Project model is where center assignments are stored
 const CENTER_ROLES = ['incubator', 'cati', 'cde'];
 
 exports.uploadTrainingProgram = async (req, res) => {
