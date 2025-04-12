@@ -1,6 +1,4 @@
 const { body, param } = require("express-validator");
-
-// Validation for project creation
 const validateProjectCreation = [
   body("title")
     .notEmpty().withMessage("Title is required")
@@ -13,8 +11,7 @@ const validateProjectCreation = [
     .isLength({ max: 500 }).withMessage("Description must be at most 500 characters"),
 
   body("team")
-    .isArray().withMessage("Team must be an array")
-    .isLength({ min: 1, max: 6 }).withMessage("Team must have between 1 and 6 members"),
+    .isArray().withMessage("Team must be an array"),
 
   // Validate each team member's fields
   body("team.*.first_name")
@@ -43,20 +40,7 @@ const validateProjectCreation = [
   body("team.*.year_of_inscription")
     .notEmpty().withMessage("Year of inscription is required")
     .isInt({ min: 2010, max: 2100 }).withMessage("Year must be a valid number"),
-
-  // Optional deadline validation
-  body("deadline")
-    .optional()
-    .isISO8601().withMessage("Deadline must be a valid date in ISO8601 format")
-    .toDate()
-    .custom((value) => {
-      if (value && new Date(value) < new Date()) {
-        throw new Error("Deadline must be in the future");
-      }
-      return true;
-    })
 ];
-
 // Validation for project update
 const validateProjectUpdate = [
   body("title")

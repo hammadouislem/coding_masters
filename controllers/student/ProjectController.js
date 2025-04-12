@@ -4,8 +4,10 @@ const GlobalDeadline = require('../../models/GlobalDeadline');
 // Controller to create a new project
 const createProject = async (req, res) => {
   try {
-    const { title, description, team } = req.body;
-    const studentId = req.user.userId;
+    const { title, description, team, userId } = req.body; // Get userId from body
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required.' });
+    }
 
     // Validate input data
     if (!title || !description || !team || team.length < 1 || team.length > 6) {
@@ -34,7 +36,7 @@ const createProject = async (req, res) => {
     }
 
     // Check if user already submitted a project
-    const existingProject = await Project.findOne({ createdBy: studentId });
+    const existingProject = await Project.findOne({ createdBy: userId });
     if (existingProject) {
       return res.status(400).json({ error: 'You have already submitted a project.' });
     }
@@ -44,7 +46,7 @@ const createProject = async (req, res) => {
       title,
       description,
       team,
-      createdBy: studentId,
+      createdBy: userId,  // Use the userId from the body
       status: 'saved',
     });
 
@@ -113,12 +115,6 @@ const submitProject = async (req, res) => {
   }
 };
 
-module.exports = {
-  createProject,
-  editProject,
-  submitProject,
-};
-
 const getProjectStatus = async (req, res) => {
   try {
     const studentId = req.user.userId;
@@ -155,7 +151,6 @@ const getProjectDetails = async (req, res) => {
       description: project.description,
       team: project.team,
       status: project.status,
-      deadline: project.deadline,
       createdAt: project.createdAt,
     });
   } catch (err) {

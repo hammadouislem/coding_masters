@@ -16,7 +16,8 @@ const projectSchema = new mongoose.Schema({
   team: {
     type: [
       {
-        name: { type: String, required: true },
+        first_name: { type: String, required: true },
+        last_name: { type: String, required: true },
         email: { type: String, required: true },
         phone: String,
         studentId: String
@@ -37,6 +38,7 @@ const projectSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Avoid overwriting the model if it's already compiled
 const Project = mongoose.models.Project || mongoose.model('Project', projectSchema);
 
 module.exports = Project;
