@@ -2,6 +2,7 @@ const { Parser } = require('json2csv');
 const ExcelJS = require('exceljs');
 const Project = require('../../models/project'); // make sure this path is correct
 const { setDownloadHeaders } = require('../../middlewares/downloadHelper');
+const CENTER_ROLES = ['admin'];
 
 const getProjectsForCenter = async (role) => {
   const projects = await Project.find({ assignedTo: role });
@@ -11,7 +12,7 @@ const getProjectsForCenter = async (role) => {
 
 exports.downloadProjectsCSV = async (req, res) => {
   try {
-    const role = req.user.role;
+    const role = req.user.type;
     if (!CENTER_ROLES.includes(role)) return res.status(403).json({ error: 'Access denied' });
 
     const projects = await getProjectsForCenter(role);
@@ -34,7 +35,7 @@ exports.downloadProjectsCSV = async (req, res) => {
 
 exports.downloadProjectsExcel = async (req, res) => {
   try {
-    const role = req.user.role;
+    const role = req.user.type;
     if (!CENTER_ROLES.includes(role)) return res.status(403).json({ error: 'Access denied' });
 
     const projects = await getProjectsForCenter(role);

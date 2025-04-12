@@ -4,7 +4,6 @@ const { createProject, getProjectStatus, editProject , submitProject} = require(
 const { getTrainingProgram} = require('../controllers/student/TrainingController');
 const { validateProjectCreation, validateProjectUpdate } = require('../schema/students');
 const { validationResult } = require('express-validator');
-const roleCheck = require('../middlewares/RoleCheck');
 
 
 router.post('/project/create', validateProjectCreation, handleValidationErrors, createProject);
