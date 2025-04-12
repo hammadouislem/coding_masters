@@ -6,7 +6,6 @@ const { validateProjectCreation, validateProjectUpdate } = require('../schema/st
 const { validationResult } = require('express-validator');
 const roleCheck = require('../middlewares/RoleCheck');
 
-router.use(roleCheck(['student'])); // ✅
 
 router.post('/project/create', validateProjectCreation, handleValidationErrors, createProject);
 router.patch('/edit-project', validateProjectUpdate, handleValidationErrors, editProject);
