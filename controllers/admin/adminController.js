@@ -1,12 +1,9 @@
 const Project = require('../../models/project');
 const GlobalDeadline = require('../../models/globalDeadline'); // make sure this model exists
 
-const isAdmin = (user) => user?.type === 'admin';
 
 exports.getAllProjects = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied - Admins only.' });
-  }
+
 
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -25,9 +22,6 @@ exports.getAllProjects = async (req, res) => {
 };
 
 exports.updateProjectStatus = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied - Admins only.' });
-  }
 
   try {
     const { projectId, status } = req.body;
@@ -65,9 +59,6 @@ exports.updateProjectStatus = async (req, res) => {
 };
 
 exports.setGlobalDeadline = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied - Admins only.' });
-  }
 
   try {
     const { deadline } = req.body;
@@ -99,9 +90,6 @@ exports.setGlobalDeadline = async (req, res) => {
 };
 
 exports.setAllProjectSubmissionStatuses = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied - Admins only.' });
-  }
 
   try {
     const projects = await Project.find({ status: 'saved' });
@@ -153,9 +141,6 @@ exports.setAllProjectSubmissionStatuses = async (req, res) => {
 };
 
 exports.getAllProjectStatuses = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied - Admins only.' });
-  }
 
   try {
     const projects = await Project.find({}).select('title status createdBy');
@@ -178,9 +163,6 @@ exports.getAllProjectStatuses = async (req, res) => {
 };
 
 exports.confirmAssignment = async (req, res) => {
-  if (!isAdmin(req.user)) {
-    return res.status(403).json({ error: 'Access denied - Admins only.' });
-  }
 
   try {
     const unprocessedProjects = await Project.find({

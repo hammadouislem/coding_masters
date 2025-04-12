@@ -5,6 +5,11 @@ const CENTER_ROLES = ['incubator', 'cati', 'cde'];
 
 exports.uploadTrainingProgram = async (req, res) => {
   try {
+    // Check if req.user is defined
+    if (!req.user) {
+      return res.status(401).json({ error: 'User not authenticated.' });
+    }
+
     const role = req.user.role;
 
     if (!CENTER_ROLES.includes(role)) {
@@ -15,23 +20,15 @@ exports.uploadTrainingProgram = async (req, res) => {
       return res.status(400).json({ error: 'PDF file is required.' });
     }
 
-    if (!req.user || !req.user.userId) {
-      return res.status(401).json({ error: 'User not authenticated.' });
-    }
-
-    const projects = await Project.find({ assignedTo: role }); // Assuming 'assignedTo' in Project contains users assigned to a center
+    const projects = await Project.find({ assignedTo: role });
 
     if (!projects.length) {
       return res.status(404).json({ error: 'No users found for this center type.' });
     }
 
-    // Extract the user IDs assigned to this center type (from the projects)
-    const assignedArray = projects.map(project => project.assignedTo).flat(); // Flatten in case there are multiple users per project
-
-    // Remove duplicates, if any
+    const assignedArray = projects.map(project => project.assignedTo).flat();
     const uniqueAssignedUsers = [...new Set(assignedArray)];
 
-    // Create a new training program object and assign the users
     const trainingProgram = new TrainingProgram({
       assignedTo: uniqueAssignedUsers,
       uploadedBy: req.user.userId,
@@ -41,7 +38,6 @@ exports.uploadTrainingProgram = async (req, res) => {
       }
     });
 
-    // Save the new training program to the database
     await trainingProgram.save();
 
     res.status(201).json({ message: 'Training program uploaded successfully.' });
@@ -49,3 +45,4 @@ exports.uploadTrainingProgram = async (req, res) => {
     res.status(500).json({ error: 'Upload failed.', details: err.message });
   }
 };
+

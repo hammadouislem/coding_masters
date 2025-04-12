@@ -1,18 +1,19 @@
 const jwt = require('jsonwebtoken');
 
-exports.verifyToken = (req, res, next) => {
-  const token = req.body.token || req.query.token; // optionally support query param too
+const authenticateUser = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Assuming Bearer token
 
   if (!token) {
-    return res.status(401).json({ error: 'Token is required in request body or query' });
+    return res.status(401).json({ error: 'User not authenticated.' });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    console.error('Token verification error:', err.message);
-    res.status(403).json({ error: 'Invalid or expired token' });
-  }
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token is invalid or expired.' });
+    }
+    req.user = decoded;  // Attach the decoded user info to the request object
+    next();  // Proceed to the next middleware or route handler
+  });
 };
+
+module.exports = { authenticateUser };
