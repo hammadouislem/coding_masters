@@ -12,6 +12,7 @@ const {
   downloadProjectsExcel,
   downloadProjectsCSV,
 } = require('../controllers/admin/download');
+const { authMiddleware } = require("../middlewares/auth");
 
 /**
  * @swagger

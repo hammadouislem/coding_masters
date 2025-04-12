@@ -3,7 +3,7 @@ const router = express.Router();
 const { uploadPDF } = require('../middlewares/filesMiddleware');
 const { uploadTrainingProgram } = require('../controllers/centers/TrainingProgram.js');
 const { downloadProjectsCSV, downloadProjectsExcel } = require('../controllers/centers/assignment.js');
-const {authenticateUser} = require('../middlewares/auth'); // Import the authentication middleware
+const { authMiddleware } = require("../middlewares/auth");
 
 /**
  * @swagger

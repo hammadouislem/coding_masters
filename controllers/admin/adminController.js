@@ -63,12 +63,11 @@ exports.setGlobalDeadline = async (req, res) => {
   try {
     const { deadline } = req.body;
 
-    // Validate the datetime-local string format
     if (!deadline || isNaN(new Date(deadline).getTime())) {
       return res.status(400).json({ error: 'Invalid deadline date format.' });
     }
 
-    const parsedDeadline = new Date(deadline); // Converts the string to a Date object
+    const parsedDeadline = new Date(deadline);
     const existingDeadline = await GlobalDeadline.findOne();
 
     if (existingDeadline) {

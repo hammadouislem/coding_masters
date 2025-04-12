@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { createProject, getProjectStatus, editProject, submitProject, getProjectDetails } = require('../controllers/student/ProjectController');
+const { authMiddleware } = require("../middlewares/auth");
 
 /**
  * @swagger

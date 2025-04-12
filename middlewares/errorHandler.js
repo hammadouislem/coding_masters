@@ -56,7 +56,6 @@ const errorHandler = (err, req, res, next) => {
     message: statusCode === 500 ? "Internal Server Error" : err.message,
   };
 
-  // Include stack trace in development mode
   if (process.env.NODE_ENV === 'development' && statusCode === 500) {
     responsePayload.stack = err.stack;
   }

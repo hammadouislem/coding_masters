@@ -12,7 +12,6 @@ module.exports = (roles = []) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Expecting payload like: { id, type }
       if (!decoded.type) {
         return res.status(401).json({ error: "Unauthorized - Invalid token payload" });
       }
