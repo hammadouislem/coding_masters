@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 
 const trainingProgramSchema = new mongoose.Schema({
-  assignedTo: {
-    type: String,
-    enum: ['incubator', 'cde', 'cati'],
-    required: true
-  },
   file: {
     data: {
       type: Buffer,
@@ -16,11 +11,11 @@ const trainingProgramSchema = new mongoose.Schema({
       required: true
     }
   },
-  uploadedBy: {
+  assignedTo: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  },
+  }],
   uploadedAt: {
     type: Date,
     default: Date.now

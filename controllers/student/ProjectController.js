@@ -1,17 +1,20 @@
 const Project = require('../../models/project');
 const GlobalDeadline = require('../../models/GlobalDeadline');
 
+// Controller to create a new project
 const createProject = async (req, res) => {
   try {
-    const { title, description, team, deadline } = req.body;
+    const { title, description, team } = req.body;
     const studentId = req.user.userId;
 
+    // Validate input data
     if (!title || !description || !team || team.length < 1 || team.length > 6) {
       return res.status(400).json({
         error: 'Invalid input data. Ensure title, description, and team size (1-6) are provided.',
       });
     }
 
+    // Validate each team member's fields
     const validTeam = team.every((member) => {
       return (
         member.first_name &&
@@ -30,11 +33,13 @@ const createProject = async (req, res) => {
       });
     }
 
+    // Check if user already submitted a project
     const existingProject = await Project.findOne({ createdBy: studentId });
     if (existingProject) {
       return res.status(400).json({ error: 'You have already submitted a project.' });
     }
 
+    // Create a new project
     const project = new Project({
       title,
       description,
@@ -44,14 +49,13 @@ const createProject = async (req, res) => {
     });
 
     await project.save();
-
     res.status(201).json({ message: 'Project created successfully.', project });
   } catch (err) {
     res.status(400).json({ error: 'Error creating project', details: err.message });
   }
 };
 
-
+// Controller to edit an existing project
 const editProject = async (req, res) => {
   try {
     const { projectId, title, description, team } = req.body;
@@ -61,6 +65,7 @@ const editProject = async (req, res) => {
       return res.status(404).json({ error: 'Project not found or unauthorized.' });
     }
 
+    // Check if the global deadline has passed
     const globalDeadline = await GlobalDeadline.findOne();
     if (globalDeadline && new Date() > new Date(globalDeadline.deadline)) {
       return res.status(400).json({ error: 'Cannot edit after global deadline has passed.' });
@@ -78,6 +83,41 @@ const editProject = async (req, res) => {
   }
 };
 
+// Controller to submit a project
+const submitProject = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const project = await Project.findById(projectId);
+
+    if (!project || project.createdBy !== req.user.userId) {
+      return res.status(404).json({ error: 'Project not found or unauthorized.' });
+    }
+
+    if (project.status === 'sent') {
+      return res.status(400).json({ error: 'Cannot modify the project after it has been submitted.' });
+    }
+
+    // Check if the global deadline has passed
+    const globalDeadline = await GlobalDeadline.findOne();
+    if (globalDeadline && new Date() > new Date(globalDeadline.deadline)) {
+      project.status = 'sent'; // Automatically submit the project
+      await project.save();
+      return res.status(200).json({ message: 'Global deadline passed. Project has been submitted automatically.', project });
+    }
+
+    project.status = 'sent'; // Mark project as submitted
+    await project.save();
+    res.status(200).json({ message: 'Project has been submitted successfully.', project });
+  } catch (err) {
+    res.status(400).json({ error: 'Error submitting project.', details: err.message });
+  }
+};
+
+module.exports = {
+  createProject,
+  editProject,
+  submitProject,
+};
 
 const getProjectStatus = async (req, res) => {
   try {
@@ -122,41 +162,6 @@ const getProjectDetails = async (req, res) => {
     res.status(500).json({ error: 'Failed to retrieve project details.', details: err.message });
   }
 }
-
-const submitProject = async (req, res) => {
-  try {
-    const { projectId } = req.params;  // Assuming projectId is part of URL params
-    const project = await Project.findById(projectId);
-
-    // Check if the project exists and belongs to the authenticated user
-    if (!project || project.createdBy !== req.user.userId) {
-      return res.status(404).json({ error: 'Project not found or unauthorized.' });
-    }
-
-    // Ensure the project cannot be modified once it is submitted
-    if (project.status === 'sent') {
-      return res.status(400).json({ error: 'Cannot modify the project after it has been submitted.' });
-    }
-
-    // Check if the global deadline has passed
-    const globalDeadline = await GlobalDeadline.findOne();
-    if (globalDeadline && new Date() > new Date(globalDeadline.deadline)) {
-      // Automatically submit the project if the global deadline has passed
-      project.status = 'sent'; // Mark project as submitted
-      await project.save();
-      return res.status(200).json({ message: 'Global deadline passed. Project has been submitted automatically.', project });
-    }
-
-    // Mark the project as 'sent' if the deadline hasn't passed
-    project.status = 'sent';
-    await project.save();
-
-    // Respond with success message
-    res.status(200).json({ message: 'Project has been submitted successfully.', project });
-  } catch (err) {
-    res.status(400).json({ error: 'Error submitting project.', details: err.message });
-  }
-};
 
 module.exports = {
   createProject,

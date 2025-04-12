@@ -1,7 +1,6 @@
-const { ValidationError } = require('express-validator');
 const winston = require('winston');
 
-// Create a logger instance with different transports (Console and File)
+// Create a logger instance with Console and File transports
 const logger = winston.createLogger({
   level: 'error',
   format: winston.format.combine(
@@ -9,22 +8,22 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   transports: [
-    new winston.transports.Console(), // log to the console
-    new winston.transports.File({ filename: 'error.log' }) // log to a file
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'error.log' })
   ]
 });
 
 // Error handler middleware
 const errorHandler = (err, req, res, next) => {
-  // ValidationError from express-validator
-  if (err instanceof ValidationError) {
+  // Express-validator error handling
+  if (Array.isArray(err?.errors) && err?.location) {
     return res.status(400).json({
       message: "Validation Error",
       errors: err.errors.map(e => e.msg),
     });
   }
 
-  // Handling Sequelize database errors
+  // Sequelize validation errors
   if (err.name === 'SequelizeValidationError') {
     return res.status(400).json({
       message: 'Database Validation Error',
@@ -46,21 +45,22 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Handle other types of errors
-  logger.error("Unexpected Error:", { message: err.message, stack: err.stack });
+  // Log unexpected errors
+  logger.error("Unexpected Error", {
+    message: err.message,
+    stack: err.stack,
+  });
 
-  // Determine status code and response format
   const statusCode = err.statusCode || 500;
   const responsePayload = {
-    message: statusCode === 500 ? "Internal Server Error" : err.message
+    message: statusCode === 500 ? "Internal Server Error" : err.message,
   };
 
-  // Include stack trace in development mode for debugging purposes
+  // Include stack trace in development mode
   if (process.env.NODE_ENV === 'development' && statusCode === 500) {
     responsePayload.stack = err.stack;
   }
 
-  // Return the error response
   return res.status(statusCode).json(responsePayload);
 };
 

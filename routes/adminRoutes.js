@@ -8,13 +8,11 @@ const {
   getAllProjectStatuses,
   confirmAssignment,
 } = require('../controllers/admin/adminController');
-const roleCheck = require('../middlewares/RoleCheck');
 const {
   downloadProjectsExcel,
   downloadProjectsCSV,
 } = require('../controllers/admin/download');
 
-router.use(roleCheck(['admin'])); // ✅ Auth + Role check
 
 router.get('/export-projects-excel', downloadProjectsExcel);
 router.get('/export-projects-csv', downloadProjectsCSV);

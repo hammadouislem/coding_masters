@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 
 const globalDeadlineSchema = new mongoose.Schema({
-  deadline: {
-    type: Date,
-    required: true
-  }
+  deadline: { type: Date, required: true }
 });
 
-module.exports = mongoose.model('GlobalDeadline', globalDeadlineSchema);
+const GlobalDeadline = mongoose.models.GlobalDeadline || mongoose.model('GlobalDeadline', globalDeadlineSchema);
+
+module.exports = GlobalDeadline;

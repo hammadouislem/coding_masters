@@ -5,7 +5,7 @@ const projectSchema = new mongoose.Schema({
   description: { type: String, required: true },
   status: {
     type: String,
-    enum: ['saved' ,'in progress', 'sent', 'assigned', 'rejected'],
+    enum: ['saved', 'in progress', 'sent', 'assigned', 'rejected'],
     default: 'saved'
   },
   createdBy: {
@@ -37,4 +37,6 @@ const projectSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Project', projectSchema);
+const Project = mongoose.models.Project || mongoose.model('Project', projectSchema);
+
+module.exports = Project;
