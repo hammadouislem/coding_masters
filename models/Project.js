@@ -23,12 +23,6 @@ const projectSchema = new mongoose.Schema({
         studentId: String
       }
     ],
-    validate: {
-      validator: function (val) {
-        return val.length >= 1 && val.length <= 6;
-      },
-      message: 'Team must have between 1 and 6 members.'
-    }
   },
   assignedTo: {
     type: String,

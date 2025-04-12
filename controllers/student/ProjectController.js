@@ -60,10 +60,14 @@ const createProject = async (req, res) => {
 // Controller to edit an existing project
 const editProject = async (req, res) => {
   try {
-    const { projectId, title, description, team } = req.body;
+    const { projectId, title, description, team, userId } = req.body; // Get userId from body
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required.' });
+    }
+
     const project = await Project.findById(projectId);
 
-    if (!project || project.createdBy !== req.user.userId) {
+    if (!project || project.createdBy.toString() !== userId) {
       return res.status(404).json({ error: 'Project not found or unauthorized.' });
     }
 
